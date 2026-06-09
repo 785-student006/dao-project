@@ -1,6 +1,7 @@
 package la.servlet;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import jakarta.servlet.RequestDispatcher;
@@ -9,7 +10,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import jakarta.servlet.http.HttpSession;
 import la.bean.ItemBean;
 import la.dao.DAOException;
 import la.dao.ItemDAO2;
@@ -31,7 +32,7 @@ public class ItemServlet2 extends HttpServlet {
 				// Listをリクエストスコープに入れてJSPへフォーワードする
 				request.setAttribute("items", list);
 				gotoPage(request, response, "/showItem2.jsp");
-			} 
+			}
 			// addは追加
 			else if (action.equals("add")) {
 				String name = request.getParameter("name");
@@ -47,7 +48,7 @@ public class ItemServlet2 extends HttpServlet {
 			else if (action.equals("sort")) {
 				String key = request.getParameter("key");
 				List<ItemBean> list;
-				if(key.equals("price_asc")) {
+				if (key.equals("price_asc")) {
 					list = dao.sortPrice(true);
 				} else {
 					list = dao.sortPrice(false);
@@ -58,8 +59,18 @@ public class ItemServlet2 extends HttpServlet {
 			}
 			// searchは検索
 			else if (action.equals("search")) {
-				int price = Integer.parseInt(request.getParameter("price"));
-				List<ItemBean>list = dao.findByPrice(price);
+				List<ItemBean> list = null;
+				String strminPrice = request.getParameter("minPrice");
+				String strmaxPrice = request.getParameter("maxPrice");
+				String name = request.getParameter("name");
+				
+				HttpSession session = request.getSession();
+				session.setAttribute("minPrice",strminPrice);
+				session.setAttribute("maxPrice",strmaxPrice);
+				session.setAttribute("name",name);
+				
+				list = dao.findByminmaxPrice(strminPrice,strmaxPrice,name);
+				session.setAttribute("list", list);
 				// Listをリクエストスコープに入れてJSPへフォーワードする
 				request.setAttribute("items", list);
 				gotoPage(request, response, "/showItem2.jsp");
@@ -73,7 +84,19 @@ public class ItemServlet2 extends HttpServlet {
 				// Listをリクエストスコープに入れてJSPへフォーワードする
 				request.setAttribute("items", list);
 				gotoPage(request, response, "/showItem2.jsp");
-			} else {
+			} 
+			
+			else if (action.equals("update")) {
+				int code = Integer.parseInt(request.getParameter("code"));
+				int price = Integer.parseInt(request.getParameter("price"));
+				
+				dao.updateByprice(code, price);
+				List<ItemBean> list = dao.findAll();
+				
+				request.setAttribute("items", list);
+				gotoPage(request,response,"/showItem2.jsp");
+			}
+			else {
 				request.setAttribute("message", "正しく操作してください。");
 				gotoPage(request, response, "/errInternal.jsp");
 			}
@@ -81,14 +104,19 @@ public class ItemServlet2 extends HttpServlet {
 			e.printStackTrace();
 			request.setAttribute("message", "内部エラーが発生しました。");
 			gotoPage(request, response, "/errInternal.jsp");
+		} catch (SQLException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
 		}
 	}
+
 	private void gotoPage(HttpServletRequest request,
 			HttpServletResponse response, String page) throws ServletException,
 			IOException {
 		RequestDispatcher rd = request.getRequestDispatcher(page);
 		rd.forward(request, response);
 	}
+
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
