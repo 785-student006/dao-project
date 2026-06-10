@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import la.bean.CartBean;
 import la.bean.ItemBean;
 import la.dao.DAOException;
@@ -31,7 +30,7 @@ public class CartServlet extends HttpServlet {
                 int code = Integer.parseInt(request.getParameter("item_code"));
                 int quantity = Integer.parseInt(request.getParameter("quantity"));
                 HttpSession session = request.getSession(true);
-                CartBean cart = (CartBean)session.getAttribute("cart");
+                CartBean cart = (CartBean) session.getAttribute("cart");
                 if (cart == null) { // 初めてのクライアントの場合はカートを作成する
                     cart = new CartBean();
                     session.setAttribute("cart", cart);
