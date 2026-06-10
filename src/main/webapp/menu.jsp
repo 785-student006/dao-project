@@ -6,5 +6,8 @@
 <c:forEach items="${categories}" var="category">
 <a href="/dao-project/ShowItemServlet?action=list&code=${category.code}">${category.name}</a>|
 </c:forEach>
-
 <a href="/dao-project/CartServlet?action=show">カートを見る</a>
+<br>
+<form action="/dao-project/ShowItemServlet?action=serch" method="get">
+<input type="text" name="keyword"><button>検索</button>
+</form>
